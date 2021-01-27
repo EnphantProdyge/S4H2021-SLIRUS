@@ -1,42 +1,73 @@
 import sounddevice as sd
-#import scipy.io.wavfile
 from google.cloud import storage
-
+from google.cloud import speech
 import soundfile as sf
 
-if __name__ == '__main__':
 
-    fs = 44100
-    duration = 2  # seconds
-    myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32') ### le met dans un numpy array
+def Speech_to_text():
+
+    fs = 44100  # frame per second
+    duration = 5  # seconds
+    myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  # Put recording in numpy array
     print("Recording Audio")
-    sd.wait()
-    #print(myrecording)
+    sd.wait()  # Stop the recording
+    # print(myrecording)
 
-    sf.write('enregistrement.flac', myrecording, fs)
+    sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in flac file
 
-    storage_client = storage.Client.from_service_account_json("SLIRUS_keyID.json")
+    storage_client = storage.Client.from_service_account_json("SLIRUS_keyID.json") #Connection to google cloud
 
-    buckets = list(storage_client.list_buckets())
-    print(buckets[0])
+    #buckets = list(storage_client.list_buckets())
+    #print(buckets[0])
 
-    bucket = storage_client.bucket("enregistrement_audio")
-    blob = bucket.blob("Test_upload")
-    blob.upload_from_filename('enregistrement.flac')
-
-
-
-    #print(
-     #   "File {} uploaded to {}.".format(
-      #      source_file_name, destination_blob_name
-      #  )
-    #)
-
+    bucket = storage_client.bucket("enregistrement_audio")  # Go in the enregistrement_audio bucket
+    blob = bucket.blob("Test_upload")  # Name of the audio file in google cloud storage
+    blob.upload_from_filename('enregistrement.flac')  # Upload audio file in computer
 
 
 ### code pour faire jouer lenregistrement
-"""   
+    """   
     print("Audio recording complete , Play Audio")
     sd.play(myrecording, fs)
     sd.wait()
     print("Play Audio Complete")"""
+
+# Instantiates a client
+    client = speech.SpeechClient.from_service_account_file("SLIRUS_keyID.json")
+
+#The name of the audio file to transcribe
+    #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
+    gcs_uri = "gs://enregistrement_audio/Test_upload" #The name of the audio file to transcribe
+
+    audio = speech.RecognitionAudio(uri=gcs_uri)
+
+    config = speech.RecognitionConfig(
+        audio_channel_count=2,
+        sample_rate_hertz=44100,
+        language_code="fr-CA",
+    )
+
+    response = client.recognize(config=config, audio=audio)
+
+    for result in response.results:
+        #print(format(result.alternatives[0].transcript))
+        string = format(result.alternatives[0].transcript)
+        #list[i] = format(result.alternatives[0].transcript)
+
+    print(string)
+    i = 0
+
+    liste = []
+
+    for caracter in string:
+        if caracter == " ":
+            continue
+        liste.append(caracter[:-1].split(None))
+        print(caracter, "placer dans la liste a la position", i)
+        i+=1
+
+    print(liste[4])
+
+
+if __name__ == '__main__':
+    Speech_to_text()
