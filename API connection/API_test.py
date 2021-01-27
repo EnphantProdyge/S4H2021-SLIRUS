@@ -3,12 +3,7 @@
 #https://console.cloud.google.com/storage/browser/_details/enregistrement_audio/Enregistrement.flac?project=disco-alchemy-302319
 
 #Imports
-import requests
-import io
-import os
 from google.cloud import speech
-#from google.cloud.speech import enums
-#from google.cloud.speech import types
 
 
 
@@ -17,16 +12,10 @@ if __name__ == '__main__':
     # Instantiates a client
     client = speech.SpeechClient.from_service_account_file("SLIRUS_keyID.json")
 
-
-    #The name of the audio file to transcribe
-    #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
     gcs_uri = "gs://enregistrement_audio/Test_upload"
 
 
     #Loads the audio into memory
-    """with io.open(file_name, 'rb') as audio_file:
-        content = audio_file.read()
-        audio = speech.RecognitionAudio(content=content)"""
 
     audio = speech.RecognitionAudio(uri=gcs_uri)
 
@@ -38,5 +27,23 @@ if __name__ == '__main__':
 
     response = client.recognize(config=config, audio=audio)
 
+
+
     for result in response.results:
-        print("Transcript: {}".format(result.alternatives[0].transcript))
+        #print(format(result.alternatives[0].transcript))
+        string = format(result.alternatives[0].transcript)
+        #list[i] = format(result.alternatives[0].transcript)
+
+    print(string)
+    i = 0
+
+    liste = []
+
+    for caracter in string:
+        if caracter == " ":
+            continue
+        liste.append(caracter[:-1].split(None))
+        print(caracter, "placer dans la liste a la position", i)
+        i+=1
+
+    print(liste[4])
