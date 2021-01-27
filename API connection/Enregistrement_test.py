@@ -3,6 +3,8 @@ from google.cloud import storage
 from google.cloud import speech
 import soundfile as sf
 
+# Punctuations to remove in texts
+PONC = ["!", '"', "'", ")", "(", ",", ".", ";", ":", "?", "-", "_", "\r", "]", "[", "«", "»", "’"]
 
 def Speech_to_text():
 
@@ -54,19 +56,39 @@ def Speech_to_text():
         string = format(result.alternatives[0].transcript)
         #list[i] = format(result.alternatives[0].transcript)
 
-    print(string)
+    #print(string)
     i = 0
 
     liste = []
 
     for caracter in string:
+        for ponc in PONC:
+            if ponc == caracter:
+                string = string.replace(caracter, " ")
+
+        if caracter == "à":
+            string = string.replace(caracter,"a")
+        elif caracter == "é":
+            string = string.replace(caracter,"e")
+        elif caracter == "ô":
+            string = string.replace(caracter, "o")
+        elif caracter == "ù":
+            string = string.replace(caracter,"u")
+        elif caracter == "è":
+            string = string.replace(caracter,"e")
+        elif caracter == "â":
+            string = string.replace(caracter, "a")
+        elif caracter == "ê":
+            string = string.replace(caracter,"e")
+        elif caracter == "û":
+            string = string.replace(caracter,"u")
+
         if caracter == " ":
             continue
         liste.append(caracter[:-1].split(None))
-        print(caracter, "placer dans la liste a la position", i)
+        #print(caracter, "placer dans la liste a la position", i)
         i+=1
-
-    print(liste[4])
+    print(string)
 
 
 if __name__ == '__main__':
