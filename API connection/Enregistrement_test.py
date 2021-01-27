@@ -1,5 +1,5 @@
 import sounddevice as sd
-import scipy.io.wavfile
+#import scipy.io.wavfile
 from google.cloud import storage
 
 import soundfile as sf
@@ -7,7 +7,7 @@ import soundfile as sf
 if __name__ == '__main__':
 
     fs = 44100
-    duration = 5  # seconds
+    duration = 2  # seconds
     myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32') ### le met dans un numpy array
     print("Recording Audio")
     sd.wait()
