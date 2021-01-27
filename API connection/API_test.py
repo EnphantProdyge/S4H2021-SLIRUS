@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     #The name of the audio file to transcribe
     #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
-    gcs_uri = "gs://enregistrement_audio/Enregistrement.flac"
+    gcs_uri = "gs://enregistrement_audio/Test_upload"
 
 
     #Loads the audio into memory
@@ -31,9 +31,8 @@ if __name__ == '__main__':
     audio = speech.RecognitionAudio(uri=gcs_uri)
 
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
         audio_channel_count=2,
-        sample_rate_hertz=48000,
+        sample_rate_hertz=44100,
         language_code="fr-CA",
     )
 

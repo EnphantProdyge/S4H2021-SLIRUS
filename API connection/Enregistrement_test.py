@@ -2,6 +2,8 @@ import sounddevice as sd
 import scipy.io.wavfile
 from google.cloud import storage
 
+import soundfile as sf
+
 if __name__ == '__main__':
 
     fs = 44100
@@ -10,20 +12,17 @@ if __name__ == '__main__':
     print("Recording Audio")
     sd.wait()
     #print(myrecording)
-    scipy.io.wavfile.write('enregistrement.wav', fs, myrecording) #ecrit un sound file wav
 
-    # bucket_name = "your-bucket-name" ???
-    # source_file_name = "local/path/to/file" --> enregistrement.wav
-    # destination_blob_name = "storage-object-name" -->enregistrement2.wav
+    sf.write('enregistrement.flac', myrecording, fs)
 
-    storage_client =  storage.Client.from_service_account_json("SLIRUS_keyID.json")
+    storage_client = storage.Client.from_service_account_json("SLIRUS_keyID.json")
 
     buckets = list(storage_client.list_buckets())
     print(buckets[0])
 
     bucket = storage_client.bucket("enregistrement_audio")
     blob = bucket.blob("Test_upload")
-    blob.upload_from_filename('enregistrement.wav')
+    blob.upload_from_filename('enregistrement.flac')
 
 
 
