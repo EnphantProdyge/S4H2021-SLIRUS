@@ -13,6 +13,7 @@ def Speech_to_text():
     myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  # Put recording in numpy array
     print("Recording Audio")
     sd.wait()  # Stop the recording
+    print("Recording stopped")
     # print(myrecording)
 
     sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in flac file
@@ -24,7 +25,7 @@ def Speech_to_text():
 
     bucket = storage_client.bucket("enregistrement_audio")  # Go in the enregistrement_audio bucket
     blob = bucket.blob("Test_upload")  # Name of the audio file in google cloud storage
-    blob.upload_from_filename('enregistrement.flac')  # Upload audio file in computer
+    blob.upload_from_filename('enregistrement.flac')  # Upload audio file from computer
 
 
 ### code pour faire jouer lenregistrement
@@ -41,15 +42,15 @@ def Speech_to_text():
     #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
     gcs_uri = "gs://enregistrement_audio/Test_upload" #The name of the audio file to transcribe
 
-    audio = speech.RecognitionAudio(uri=gcs_uri)
+    audio = speech.RecognitionAudio(uri=gcs_uri)  # Contains the audio file
 
     config = speech.RecognitionConfig(
         audio_channel_count=2,
         sample_rate_hertz=44100,
         language_code="fr-CA",
-    )
+    )  # Configurations to read the audio file
 
-    response = client.recognize(config=config, audio=audio)
+    response = client.recognize(config=config, audio=audio)  # Transcription form audio to text
 
     for result in response.results:
         #print(format(result.alternatives[0].transcript))
@@ -58,38 +59,48 @@ def Speech_to_text():
 
     #print(string)
     i = 0
-
     liste = []
-
+    #print("Version 0 " + string)
     for caracter in string:
         for ponc in PONC:
             if ponc == caracter:
                 string = string.replace(caracter, " ")
+                caracter = " "
 
         if caracter == "à":
+            liste.append("a")
             string = string.replace(caracter,"a")
         elif caracter == "é":
+            liste.append("e")
             string = string.replace(caracter,"e")
         elif caracter == "ô":
+            liste.append("o")
             string = string.replace(caracter, "o")
         elif caracter == "ù":
+            liste.append("u")
             string = string.replace(caracter,"u")
         elif caracter == "è":
+            liste.append("e")
             string = string.replace(caracter,"e")
         elif caracter == "â":
+            liste.append("a")
             string = string.replace(caracter, "a")
         elif caracter == "ê":
+            liste.append("e")
             string = string.replace(caracter,"e")
         elif caracter == "û":
+            liste.append("u")
             string = string.replace(caracter,"u")
-
-        if caracter == " ":
+        elif caracter == " ":
             continue
-        liste.append(caracter[:-1].split(None))
+        else:
+            liste.append(caracter)
+
         #print(caracter, "placer dans la liste a la position", i)
-        i+=1
-    print(string)
+        i = i+1
+    return liste, string
+
 
 
 if __name__ == '__main__':
-    Speech_to_text()
+    (liste, string) = Speech_to_text()
