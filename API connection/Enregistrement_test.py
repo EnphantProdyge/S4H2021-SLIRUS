@@ -69,28 +69,28 @@ def Speech_to_text():
 
         if caracter == "à":
             liste.append("a")
-            string = string.replace(caracter,"a")
+            string = string.replace(caracter, "a")
         elif caracter == "é":
             liste.append("e")
-            string = string.replace(caracter,"e")
+            string = string.replace(caracter, "e")
         elif caracter == "ô":
             liste.append("o")
             string = string.replace(caracter, "o")
         elif caracter == "ù":
             liste.append("u")
-            string = string.replace(caracter,"u")
+            string = string.replace(caracter, "u")
         elif caracter == "è":
             liste.append("e")
-            string = string.replace(caracter,"e")
+            string = string.replace(caracter, "e")
         elif caracter == "â":
             liste.append("a")
             string = string.replace(caracter, "a")
         elif caracter == "ê":
             liste.append("e")
-            string = string.replace(caracter,"e")
+            string = string.replace(caracter, "e")
         elif caracter == "û":
             liste.append("u")
-            string = string.replace(caracter,"u")
+            string = string.replace(caracter, "u")
         elif caracter == " ":
             continue
         else:
