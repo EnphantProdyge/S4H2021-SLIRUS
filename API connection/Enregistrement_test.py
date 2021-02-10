@@ -2,6 +2,7 @@ import sounddevice as sd
 from google.cloud import storage
 from google.cloud import speech
 import soundfile as sf
+import numpy
 
 # Punctuations to remove in texts
 PONC = ["!", '"', "'", ")", "(", ",", ".", ";", ":", "?", "-", "_", "\r", "]", "[", "«", "»", "’"]
@@ -12,17 +13,18 @@ def Speech_to_text():
     duration = 5  # seconds
     myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  # Put recording in numpy array
     print("Recording Audio")
-    sd.wait()  # Stop the recording
+    sd.wait()
     print("Recording stopped")
     # print(myrecording)
 
     sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in flac file
 
-    storage_client = storage.Client.from_service_account_json("SLIRUS_keyID.json") #Connection to google cloud
+    storage_client = storage.Client.from_service_account_json("SLIRUS_keyID.json") #Connection to google cloud for storage purposes
 
     #buckets = list(storage_client.list_buckets())
     #print(buckets[0])
 
+    # Upload the flac audio file in google cloud storage
     bucket = storage_client.bucket("enregistrement_audio")  # Go in the enregistrement_audio bucket
     blob = bucket.blob("Test_upload")  # Name of the audio file in google cloud storage
     blob.upload_from_filename('enregistrement.flac')  # Upload audio file from computer
@@ -35,13 +37,14 @@ def Speech_to_text():
     sd.wait()
     print("Play Audio Complete")"""
 
-# Instantiates a client
+# Instantiates a client for transcription
     client = speech.SpeechClient.from_service_account_file("SLIRUS_keyID.json")
 
 #The name of the audio file to transcribe
     #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
-    gcs_uri = "gs://enregistrement_audio/Test_upload" #The name of the audio file to transcribe
+    gcs_uri = "gs://enregistrement_audio/Test_upload" # Audio file google_cloud_storage link
 
+#Transcription of the audio file in google cloud storage
     audio = speech.RecognitionAudio(uri=gcs_uri)  # Contains the audio file
 
     config = speech.RecognitionConfig(
@@ -52,6 +55,7 @@ def Speech_to_text():
 
     response = client.recognize(config=config, audio=audio)  # Transcription form audio to text
 
+# Add each letter in a string
     for result in response.results:
         #print(format(result.alternatives[0].transcript))
         string = format(result.alternatives[0].transcript)
@@ -61,6 +65,8 @@ def Speech_to_text():
     i = 0
     liste = []
     #print("Version 0 " + string)
+
+# Add each caracter in a list and removing of punctuations
     for caracter in string:
         for ponc in PONC:
             if ponc == caracter:
@@ -103,4 +109,4 @@ def Speech_to_text():
 
 
 if __name__ == '__main__':
-    (liste, string) = Speech_to_text()
+    (liste, string) = Speech_to_text() #list of caracters and string of the phrase transcribed
