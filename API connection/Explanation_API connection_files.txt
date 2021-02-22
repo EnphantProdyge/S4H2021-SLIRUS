@@ -1,0 +1,52 @@
+%%%%% This file will explain how to run the speech-to-text API on a Raspberry pi 3b+
+ %%%%%
+
+1. Creat_VenV.py
+
+If you want to run you program in a virtual environment (recommended), you`ll need to create one. 
+This file lets you chose the path and the name of your virtual environment.
+ATTENTION: This file will not work on Windows or Mac, because the file writes directly in the command window available only in Linux
+
+It is recommended to create a virtual environment if you have multiple python programs and they use different versions of modules/Packages. By creating a virtual environment, you can isolate the necessary 
+packages and run them with the right program. An old library version is used in this folder, so a virtual envrionment can be necessary
+
+2. Install librairies
+
+Libraries installations are quite simple with the right tools. First of all, be sure to install pip on your Raspberry pi
+
+2.1  Activate virtual environment
+
+If you have decided to create a virtual environment, you need to activate it to install the required packages
+
+	1. Open the command window (Habitually a black box on the top right)
+	2. write: "source /path/to/venv/bin/activate"
+	3. The virtual environment name should be written in the command window
+
+You are now ready to install libraries in the virtual environment
+
+2.2 Install librairies for the project
+
+	1. Open the command window
+	2. Write "python3 -m pip install package" where the packages in the project are soundfile, sounddevice, google-cloud-storage and google-cloud-speech
+
+ATTENTION: We used the version 2.0.0 for the google-cloud-speech library. The RecognitionAudio and RecognitionConfig have then been modified
+
+	3. With these packages, the program may not work. At the moment of the project's creation, there are numpy and PortAudio problems with sounddevice and the Raspberry pi OS. 
+	   You will then need to install a few more packages if it is your case.
+	   Open the commande window and write: "sudo apt-get install " and then install these libraries: libportaudio2, libasound-dev and libatlas-base-dev
+
+3. Connection to API
+
+In the file Enregistrement.py, a key is necessary to be able to use the Speech-to-text API.
+When you create your own google-cloud account, you need to be able to get the key.
+The key should be a json file and must be in the same folder as Enregsitrement_test.py when it is running.
+
+4. Run Enregistrement_test.py in the virtual environment
+
+This section is reserved to those who use a virtual environment. 
+To open the file in the virtual environment (and use the libraries inside), be sure that the virtual environment is still active.
+Then, write in the command window "cd /path/to/file"
+You should now be in the folder with the right files
+Write in the command window "python3 Enregistrement_test.py" 
+  
+You should now be able to transcribe your voice into text.

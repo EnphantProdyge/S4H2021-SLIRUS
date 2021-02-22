@@ -1,6 +1,8 @@
 import sounddevice as sd
 from google.cloud import storage
 from google.cloud import speech
+from google.cloud.speech import types
+from google.cloud.speech import enums
 import soundfile as sf
 import numpy
 
@@ -9,7 +11,7 @@ PONC = ["!", '"', "'", ")", "(", ",", ".", ";", ":", "?", "-", "_", "\r", "]", "
 
 def Speech_to_text():
 
-    fs = 44100  # frame per second
+    fs = 48000  # frame per second
     duration = 5  # seconds
     myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  # Put recording in numpy array
     print("Recording Audio")
@@ -45,14 +47,13 @@ def Speech_to_text():
     gcs_uri = "gs://enregistrement_audio/Test_upload" # Audio file google_cloud_storage link
 
 #Transcription of the audio file in google cloud storage
-    audio = speech.RecognitionAudio(uri=gcs_uri)  # Contains the audio file
+    audio = types.RecognitionAudio(uri=gcs_uri)  # Contains the audio file
 
-    config = speech.RecognitionConfig(
+    config = types.RecognitionConfig(
         audio_channel_count=2,
-        sample_rate_hertz=44100,
+        sample_rate_hertz=48000,
         language_code="fr-CA",
     )  # Configurations to read the audio file
-
     response = client.recognize(config=config, audio=audio)  # Transcription form audio to text
 
 # Add each letter in a string
@@ -110,3 +111,4 @@ def Speech_to_text():
 
 if __name__ == '__main__':
     (liste, string) = Speech_to_text() #list of caracters and string of the phrase transcribed
+    print(string)
