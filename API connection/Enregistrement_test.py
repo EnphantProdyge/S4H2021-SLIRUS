@@ -9,10 +9,10 @@ import numpy
 # Punctuations to remove in texts
 PONC = ["!", '"', "'", ")", "(", ",", ".", ";", ":", "?", "-", "_", "\r", "]", "[", "«", "»", "’"]
 
-def Speech_to_text():
+def Speech_to_text(dur):
 
     fs = 48000  # frame per second
-    duration = 5  # seconds
+    duration = dur  # seconds
     myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  # Put recording in numpy array
     print("Recording Audio")
     sd.wait()
@@ -21,7 +21,7 @@ def Speech_to_text():
 
     sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in flac file
 
-    storage_client = storage.Client.from_service_account_json("SLIRUS_keyID.json") #Connection to google cloud for storage purposes
+    storage_client = storage.Client.from_service_account_json("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json") #Connection to google cloud for storage purposes
 
     #buckets = list(storage_client.list_buckets())
     #print(buckets[0])
@@ -40,7 +40,7 @@ def Speech_to_text():
     print("Play Audio Complete")"""
 
 # Instantiates a client for transcription
-    client = speech.SpeechClient.from_service_account_file("SLIRUS_keyID.json")
+    client = speech.SpeechClient.from_service_account_file("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json")
 
 #The name of the audio file to transcribe
     #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
@@ -110,5 +110,6 @@ def Speech_to_text():
 
 
 if __name__ == '__main__':
-    (liste, string) = Speech_to_text() #list of caracters and string of the phrase transcribed
+    dur = int(input("Enter the duration of recording: "))
+    (liste, string) = Speech_to_text(dur) #list of caracters and string of the phrase transcribed
     print(string)
