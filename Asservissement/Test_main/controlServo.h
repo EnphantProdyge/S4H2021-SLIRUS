@@ -15,6 +15,7 @@
 #include <Arduino.h>
 #include <Adafruit_PWMServoDriver.h>                        ///< Library needed to control the PWM of servo drive.
 #include <Wire.h>
+#include <DynamixelWorkbench.h>
 
   // Section to change when adding servos or characters:
 #define NB_MOTORS             10                            ///< Number of active motors.
@@ -29,6 +30,8 @@
 #define CONFIG_MRLA			  4                             ///< Finger middle ring or little with 80 degree angle on both knuckle.
 #define CONFIG_MRLB			  5                             ///< Finger middle ring or little with 100 degree angle on both knuckle.
 #define CONFIG_MRLC			  6                             ///< Finger middle ring or little with 110 degree angle on both knuckle.
+#define VERTICAL_CROSS		  7								///< Index fully unfold and cross.
+#define VERTICAL_HCROSS		  7								///< Index fully unfold and cross.
 
 
 /** @brief The next defined are the different fingers implemented.
@@ -42,7 +45,7 @@
 #define RING                  6
 #define LITTLE                8
 
- /**Defining moving angles.
+ /**Defining fingers moving angles.
   */
 #define KNUCKLE1_UP				0							///< Angle for a straigth knuckle.
 #define KNUCKLE1_90             180                         ///< Angle for an inclined knuckle.
@@ -51,6 +54,27 @@
 #define KNUCKLE_80				80							///< Angle for an 80 degrees inclined knuckle.
 #define KNUCKLE_100				100							///< Angle for an 100 degrees inclined knuckle.
 #define KNUCKLE_110				110                         ///< Angle for an 110 degrees inclined knuckle.
+#define NOT_CROSS				0							///< Angle for a index not cross.
+#define FULLY_CROSS				90							///< Angle for a index fully cross.
+#define HALF_CROSS				45							///< Angle for a index half cross.
+
+/**Defining base moving angles.
+*/
+#define FRONT					0							///< Hand face front.
+#define DOWN_RIGHT				1							///< Hand turn rigth and wrist at 90 degrees.
+#define HALF_LEFT				2							///< Hand turn rigth and wrist at 45 degrees.
+#define LEFT					3							///< Hand turn left.
+#define DOWN					4							///< Hand have wrist at 90 degrees.
+#define MOVE_J					5							///< Hand move for J letter.
+#define MOVE_Z					6							///< Hand move for Z letter.
+
+#define WRIST_UP				2							///< Angle for a vertical wrist.
+#define WRIST_HALF				500							///< Angle for a 45 degrees wirst.
+#define WRIST_DOWN				1000							///< Angle for a horizontal wrist.
+float b_front;
+float b_rigth;
+float b_left;
+
 
   /**The next section contains defined PWM constants.
    */
@@ -61,6 +85,7 @@
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();    ///< Setting up the pwm object with the default address for the driver (0x40).
 uint8_t servonum = 1;                                       ///< Creation of a servo driver object (PCA9685).
+DynamixelWorkbench dxl_wb;
 
 /** @struct character
  * @brief Creating a structure that will hold informations relative to each character.
@@ -69,7 +94,8 @@ struct character {
 	int id;                                                   ///< The character in question converted in Ascii.
 	int pattern[NB_FINGERS];                                  ///< The pattern in which order should the fingers move.
 	int angle[NB_FINGERS];                                    ///< The angles the fingers should move to in accordance to the pattern.
-} charact[NB_LETTERS];                                      ///< Creating a structure instance charact wich is an array the size of 
+	int rotation;										  ///< Angle for the rotation of the base and wrist.
+} charact[NB_LETTERS];                                        ///< Creating a structure instance charact wich is an array the size of 
 
 class Servo
 {
@@ -81,50 +107,61 @@ public:
 		 * This is the structure to follow :
 		 * charact[int] = {{('Character id')},{pattern},{Angles}};
 		 */
-		charact[0] = { ('0'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC} };
-		charact[1] = { ('1'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[2] = { ('2'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[3] = { ('3'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[4] = { ('4'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL,VERTICAL} };
-		charact[5] = { ('5'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,VERTICAL,VERTICAL} };
-		charact[6] = { ('a'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[7] = { ('b'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{HORIZONTAL,VERTICAL,VERTICAL,VERTICAL,VERTICAL} };
-		charact[8] = { ('c'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{CONFIG_MRLA,CONFIG_MRLA,CONFIG_MRLA,CONFIG_MRLA,CONFIG_MRLA} };
-		charact[9] = { ('d'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{VERTICAL,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC} };
-		charact[10] = { ('e'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLB,CONFIG_MRLB,CONFIG_MRLB} };
-		charact[11] = { ('f'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{SEC_90,SEC_90,VERTICAL,VERTICAL,VERTICAL} };
-		charact[12] = { ('g'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[13] = { ('h'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[14] = { ('i'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL,FULLY_INCLINED} };
-		charact[15] = { ('j'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL,FULLY_INCLINED} };
-		charact[16] = { ('k'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[17] = { ('l'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[18] = { ('m'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC,CONFIG_MRLC,FULLY_INCLINED} };
-		charact[19] = { ('n'),{LITTLE,RING,THUMB,INDEX,MIDDLE,},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC} };
-		charact[20] = { ('o'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{SEC_90,SEC_90,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC} };
-		charact[21] = { ('p'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,HORIZONTAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[22] = { ('q'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[23] = { ('r'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[24] = { ('s'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[25] = { ('t'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL} };
-		charact[26] = { ('u'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[27] = { ('v'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[28] = { ('w'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED} };
-		charact[29] = { ('x'),{LITTLE,RING,MIDDLE,INDEX,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,SEC_90,FULLY_INCLINED} };
-		charact[30] = { ('y'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL} };
-		charact[31] = { ('z'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED} };
-		charact[32] = { ('6'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED} };
-		charact[33] = { ('7'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,VERTICAL} };
-		charact[34] = { ('8'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,CONFIG_MRLC,VERTICAL,VERTICAL} };
-		charact[35] = { ('9'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL} };
+		charact[0] = { ('0'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC},LEFT };
+		charact[1] = { ('1'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[2] = { ('2'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[3] = { ('3'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[4] = { ('4'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL,VERTICAL},FRONT };
+		charact[5] = { ('5'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,VERTICAL,VERTICAL},FRONT };
+		charact[6] = { ('a'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[7] = { ('b'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{HORIZONTAL,VERTICAL,VERTICAL,VERTICAL,VERTICAL},FRONT };
+		charact[8] = { ('c'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{CONFIG_MRLA,CONFIG_MRLA,CONFIG_MRLA,CONFIG_MRLA,CONFIG_MRLA},HALF_LEFT };
+		charact[9] = { ('d'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{VERTICAL,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC},FRONT };
+		charact[10] = { ('e'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLB,CONFIG_MRLB,CONFIG_MRLB},FRONT };
+		charact[11] = { ('f'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{SEC_90,SEC_90,VERTICAL,VERTICAL,VERTICAL},FRONT };
+		charact[12] = { ('g'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},DOWN_RIGHT };
+		charact[13] = { ('h'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED},DOWN_RIGHT };
+		charact[14] = { ('i'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL,FULLY_INCLINED},FRONT };
+		charact[15] = { ('j'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL,FULLY_INCLINED},MOVE_J };
+		charact[16] = { ('k'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[17] = { ('l'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[18] = { ('m'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC,CONFIG_MRLC,FULLY_INCLINED},DOWN };
+		charact[19] = { ('n'),{LITTLE,RING,THUMB,INDEX,MIDDLE,},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC},DOWN };
+		charact[20] = { ('o'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{SEC_90,SEC_90,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC},LEFT };
+		charact[21] = { ('p'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,HORIZONTAL,FULLY_INCLINED,FULLY_INCLINED},DOWN_RIGHT };
+		charact[22] = { ('q'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},DOWN_RIGHT };
+		charact[23] = { ('r'),{THUMB,RING,LITTLE,MIDDLE,INDEX},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL,VERTICAL_CROSS},FRONT };
+		charact[24] = { ('s'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[25] = { ('t'),{INDEX,MIDDLE,RING,LITTLE,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL},FRONT };
+		charact[26] = { ('u'),{THUMB,MIDDLE,RING,LITTLE,INDEX},{FULLY_INCLINED,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,VERTICAL_HCROSS},FRONT };
+		charact[27] = { ('v'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,FULLY_INCLINED},FRONT };
+		charact[28] = { ('w'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED},FRONT };
+		charact[29] = { ('x'),{LITTLE,RING,MIDDLE,INDEX,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,SEC_90,FULLY_INCLINED},FRONT };
+		charact[30] = { ('y'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL},FRONT };
+		charact[31] = { ('z'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},MOVE_Z };
+		charact[32] = { ('6'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED},FRONT };
+		charact[33] = { ('7'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,VERTICAL},FRONT };
+		charact[34] = { ('8'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,CONFIG_MRLC,VERTICAL,VERTICAL},FRONT };
+		charact[35] = { ('9'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL},FRONT };
 	}
 
+	bool setupBase(float position) {
+		b_front = 0 + position;
+		b_rigth = 3100 + position;
+		b_left = -3100 + position;
+		#define BASE_FRONT				b_front						///< Angle for base facing front.
+		#define BASE_RIGHT				b_rigth						///< Angle for base turning rigth.
+		#define BASE_LEFT				b_left						///< Angle for base turning left.
+		return true;
+	}
 
 	bool servoOut(int character, int increment) {
 		character = adjustCommand(character);
 		int finger = charact[character].pattern[increment];
 		int moveOption = charact[character].angle[increment];
+		int wristBase = charact[character].rotation;
 		moveFinger(finger, moveOption);
+		moveBaseWrist(wristBase);
 		if (increment < NB_FINGERS - 1) { return false; }
 		else { return true; }
 	}
@@ -139,7 +176,9 @@ public:
 		character = adjustCommand(character);
 		int finger = charact[character].pattern[decrement];
 		int moveOption = VERTICAL;
+		int wristBase = FRONT;
 		moveFinger(finger, moveOption);
+		moveBaseWrist(wristBase);
 		if (decrement > 0) { return false; }
 		else { return true; }
 	}
@@ -150,9 +189,57 @@ public:
 	 * @return true only once every finger has unfold.
 	 */
 
+	int moveBaseWrist(int wristBase) {
+		int nbMotor = 2;
+		int rotation[nbMotor];
+		bool readyToMove = false;
+		for (int i = 0; i < nbMotor; i++) {
+			rotation[i] = 0;
+		}
+		if (wristBase == 0) {
+			rotation[0] = BASE_FRONT;
+			rotation[1] = WRIST_UP;
+			readyToMove = true;
+		}
+		if (wristBase == 1) {
+			rotation[0] = BASE_RIGHT;
+			rotation[1] = WRIST_DOWN;
+			readyToMove = true;
+		}
+		if (wristBase == 2) {
+			rotation[0] = BASE_LEFT;
+			rotation[1] = WRIST_HALF;
+			readyToMove = true;
+		}
+		if (wristBase == 3) {
+			rotation[0] = BASE_LEFT;
+			rotation[1] = WRIST_UP;
+			readyToMove = true;
+		}
+		if (wristBase == 4) {
+			rotation[0] = BASE_FRONT;
+			rotation[1] = WRIST_DOWN;
+			readyToMove = true;
+		}
+		if (wristBase == 5) {
+			//MOUVEMENT POR LA LETTRE J
+			readyToMove = true;
+		}
+		if (wristBase == 6) {
+			//MOUVEMENT POR LA LETTRE Z
+			readyToMove = true;
+		}
+		if (readyToMove) {
+				dxl_wb.goalPosition(12, rotation[0]);
+				dxl_wb.goalPosition(11, rotation[1]);
+		}
+		return 0;
+	}
+
 	int moveFinger(int finger, int moveOption) {
 		int nbMotor = 2;
-		int angle[nbMotor];
+		int angle[nbMotor+1];
+		angle[2] = NOT_CROSS;
 		for (int i = 0; i < nbMotor; i++) {
 			angle[i] = 25;
 		}
@@ -192,11 +279,25 @@ public:
 			angle[1] = KNUCKLE_110;
 			readyToMove = true;
 		}
-		else {}
+		if (moveOption == 7) {
+			angle[0] = KNUCKLE1_UP;
+			angle[1] = KNUCKLE2_UP;
+			angle[2] = FULLY_CROSS;
+			readyToMove = true;
+		}
+		if (moveOption == 8) {
+			angle[0] = KNUCKLE1_UP;
+			angle[1] = KNUCKLE2_UP;
+			angle[2] = HALF_CROSS;
+			readyToMove = true;
+		}
 		if (readyToMove) {
 			for (int i = 0; i < nbMotor; i++) {
 				pwm.setPWM(finger + i, 0, pulseWidth(angle[i]));
 			}
+		}
+		if (finger == 2) {
+			pwm.setPWM(10, 0, pulseWidth(angle[2]));
 		}
 		return 0;
 	}
