@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QString>
 #include <QStringList>
+#include <QGraphicsScene>
 
 namespace Ui {
 class MainWindow;
@@ -21,11 +22,20 @@ public:
     int GetRecordingTime();
     void Set_label_visible(QLabel *label);
     void Set_label_invisible(QLabel *label);
-    void Message();
+    void Message_toTranscript();
+    bool startsWith(const char *pre, const char *str);
+    void MessageBoxError(QString message);
+    const char* QStringtoChar(QString qs);
+    void Display_image(QString lettre);
 
 private slots:
     void Record_sequence();
-    void on_Start_record_button_clicked();
+    void SendStrToOpenCR();
+    void on_Start_traduction_pressed();
+    void on_See_charac_returnPressed();
+
+//public slots:
+  //      void Display_image(QString lettre);
 
 private:
     Ui::MainWindow *ui;
@@ -33,7 +43,10 @@ private:
     int Recording_increment;
     QString OutputSpeech;
     QString OutputError;
+    QString OutputOpenCR;
     QStringList OutputSpeechList;
+    QGraphicsScene *scene;
+    QPixmap image;
 };
 
 #endif // MAINWINDOW_H
