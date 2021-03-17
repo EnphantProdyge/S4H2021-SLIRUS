@@ -11,7 +11,12 @@
 #include <QPixmap>
 #include <QGraphicsScene>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
+std::thread com_;
+std::mutex mutex;
+std::condition_variable cv_;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,9 +24,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->Phrase_recorded->setText(" ");
+    //ui->Recording_state->set
 
-
-    connect(ui->Start_record_button, SIGNAL(pressed()), this, SLOT(Record_sequence()));
+    Recording_increment = 1;
+    connect(ui->Start_record_button, SIGNAL(pressed()), this, SLOT(Start_Thread()));
 }
 
 MainWindow::~MainWindow()
@@ -40,13 +46,22 @@ void MainWindow::SendStrToOpenCR()
             QString output = process->readAllStandardOutput();
             OutputOpenCR = output;
             const char* chartemp= MainWindow::QStringtoChar(OutputOpenCR);
-            if (MainWindow::startsWith("str", chartemp) == true)
+            if (MainWindow::startsWith("Interface:", chartemp) == true)
             {
                 QString qstemp = OutputOpenCR;
-                qstemp.remove(0,3);
+                qstemp.remove(0,10);
+                chartemp= MainWindow::QStringtoChar(qstemp);
 
-                std::thread Dis_image_thread (&MainWindow::Display_image,this,qstemp);
-                Dis_image_thread.join();
+                if (MainWindow::startsWith("debut:", chartemp) == true)
+                {
+                    qstemp.remove(0,6);
+                    Display_image(qstemp);
+                }
+                else if (MainWindow::startsWith("fin:", chartemp) == true)
+                {
+                    qstemp.remove(0,4);
+                    //Erase_image();
+                }
             }
             else if (MainWindow::startsWith("stop", chartemp) == true)
                     QCoreApplication::exit();
@@ -77,7 +92,6 @@ void MainWindow::SendStrToOpenCR()
 
 void MainWindow::Record_sequence()
 {
-    Recording_increment = 1;
     int Record_time = MainWindow::GetRecordingTime();
 
     if (Record_time == -1)
@@ -90,17 +104,18 @@ void MainWindow::Record_sequence()
         QProcess *process = new QProcess();
         connect(process, &QProcess::readyReadStandardOutput, [process, this]()
         {
-            QMessageBox msgBox;
             QString output = process->readAllStandardOutput();
-            OutputSpeech = output;
-            qDebug() << "output: " << output;
-            if (Recording_increment == 1)
-            {
 
-                msgBox.setText("Now Recording...");
-                msgBox.exec();
-                Recording_increment = 0;
+            mutex.lock();
+            OutputSpeech = output;
+            mutex.unlock();
+            qDebug() << "output: " << output;
+            if (Recording_increment != -1)
+            {
+                Display_Recording_Labels();
+                Recording_increment = Recording_increment - 1;
             }
+
         });
 
         connect(process, &QProcess::readyReadStandardError, [process, this]()
@@ -158,8 +173,10 @@ void MainWindow::Set_label_invisible(QLabel *label)
 
 void MainWindow::Message_toTranscript()
 {
+    Display_Recording_Labels();
     if (OutputError != NULL)
     {
+        com_.join();
         MainWindow::MessageBoxError("No words were recorded");
     }
     else
@@ -175,6 +192,7 @@ void MainWindow::Message_toTranscript()
         OutputSpeech = OutputSpeechList.QStringList::join("");
         ui->Phrase_recorded->setText(OutputSpeech);
         qDebug() << OutputSpeech << endl;
+        Recording_increment = 1;
     }
 }
 
@@ -183,15 +201,14 @@ void MainWindow::Display_image(QString lettre)
     QString qstr_temp = "/home/pi/env/SLIRUS_interface/Images/";
     qstr_temp.append(lettre);
     qstr_temp.append(".png");
-    const char* path = MainWindow::QStringtoChar(qstr_temp);
-    //std::string utf8_text = qstr_temp.toUtf8().constData();
-    //const char* path = utf8_text.c_str();
-    image.load(path);
-    image.scaled(281,271);
+    qDebug() << qstr_temp << endl;
+    image.load(qstr_temp);
+    image.scaled(400,400);
     scene = new QGraphicsScene(this);
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
     ui->MainWindow::mainImage->setScene(scene);
+
 }
 
 void MainWindow::MessageBoxError(QString message)
@@ -203,8 +220,10 @@ void MainWindow::MessageBoxError(QString message)
 
 void MainWindow::on_Start_traduction_pressed()
 {
-    //std::string temp = "c";
-    //MainWindow::Display_image(temp);
+    if (com_.joinable())
+        com_.join();
+
+    com_ = std::thread(&MainWindow::SendStrToOpenCR,this);
     MainWindow::SendStrToOpenCR();
 }
 
@@ -231,4 +250,23 @@ const char* MainWindow::QStringtoChar(QString qs)
     std::string utf8_text = qs.toUtf8().constData();
     const char* temp_char = utf8_text.c_str();
     return temp_char;
+}
+
+void MainWindow::Start_Thread() //1 to start Record_Sequence and 2 for SendStrtoOpenCR
+{
+    OutputSpeech = "";
+    if (com_.joinable())
+        com_.join();
+
+    com_ = std::thread(&MainWindow::Record_sequence,this);
+}
+
+void MainWindow::Display_Recording_Labels()
+{
+    qDebug() << Recording_increment << endl;
+    if (Recording_increment == 1)
+         ui->Recording_state->setText("Now Recording...");
+
+     else if (Recording_increment == 0)
+         ui->Recording_state->setText("Stopped recording");
 }

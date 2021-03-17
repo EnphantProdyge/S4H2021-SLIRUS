@@ -27,12 +27,17 @@ public:
     void MessageBoxError(QString message);
     const char* QStringtoChar(QString qs);
     void Display_image(QString lettre);
+    void Record_sequence();
+    void Display_Recording_Labels();
+
 
 private slots:
-    void Record_sequence();
+
     void SendStrToOpenCR();
     void on_Start_traduction_pressed();
     void on_See_charac_returnPressed();
+    void Start_Thread();
+
 
 //public slots:
   //      void Display_image(QString lettre);
