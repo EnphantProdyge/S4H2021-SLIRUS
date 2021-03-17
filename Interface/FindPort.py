@@ -28,6 +28,7 @@ def serial_ports():
             if "Arduino" in port[1] or "USB" in port[1]:
                 result.append(port[0])
         elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+            print(port[1])
             if "ACM0" in port[1] or "AMA0" in port[1]:
                 result.append(port[0])
         else:
@@ -37,13 +38,13 @@ def serial_ports():
 
 def SendStrToOpenCR(port,msg):
     
-    ser = serial.Serial(port, 9600, timeout=1)
+    ser = serial.Serial("/dev/ttyACM0", 57600, timeout=1)
     ser.flush()
     line = ""
 
     
-    while line == "" :
-        print(ser)
+    while line == "IM DONE" :
+        #print(ser)
         ser.write(msg.encode('utf-8'))
         print("in")
         line = ser.readline().decode('utf-8').rstrip()
