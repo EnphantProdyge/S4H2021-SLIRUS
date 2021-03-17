@@ -4,6 +4,7 @@
 #include "controlServo.h"
 #include <DynamixelWorkbench.h>
 #include <string>
+#include "Communication.h"
 
 #define FREQUENCY   50
 #define NB_FINGERS  5
@@ -13,16 +14,19 @@
 #elif defined(__OPENCR__)
 #define DEVICE_NAME ""
 #endif  
-String word1 = "cr";
+
+String msg = "";
 uint16_t model_number = 0;
 uint16_t model_number2 = 0;
 char result, result2;
 int32_t position = 0;
+
+COM_Arduino ROB;
 Servo servo;
 
 void setup() {
   Serial.begin(BAUDRATE); 
-  while (!Serial); // Wait for Opening Serial Monitor
+  //while (!Serial); // Wait for Opening Serial Monitor
 
   //Initialisation Dinamixel
   dxl_wb.init(DEVICE_NAME, BAUDRATE); //Initialisation du systeme qui gere les moteurs
@@ -31,9 +35,9 @@ void setup() {
   dxl_wb.setExtendedPositionControlMode(12);
   dxl_wb.setPositionControlMode(11);
   result = dxl_wb.setVelocityBasedProfile(11);
-  result = dxl_wb.itemWrite(11,"Profile_Velocity",150 );
-  result = dxl_wb.itemWrite(11,"Profile_Acceleration",30);
-  //result = dxl_wb.itemWrite(11,"Drive_Mode",0);
+  result = dxl_wb.itemWrite(11,"Profile_Velocity",80 );
+  result = dxl_wb.itemWrite(11,"Profile_Acceleration",20);
+  result = dxl_wb.itemWrite(11,"Drive_Mode",0);
   dxl_wb.torqueOn(11);
   dxl_wb.torqueOn(12);
 
@@ -53,26 +57,41 @@ void setup() {
 
 void loop() {
   // string to individual caracteres
-  if (word1.length()>0){
-    Serial.println("in if");
-    Serial.println(word1);
-      char caracteres[sizeof(word1)+1];
-      strcpy(caracteres, word1.c_str());
-      for (int i = 0; i < (word1.length()); i++){
-        Serial.print("for i = ");
-        Serial.println(i);
-        Serial.print("Caractere = ");
-        Serial.println(caracteres[i]);
-        delay(1000);
-        for(int increment = 0; increment<NB_FINGERS; increment++){
-            Serial.println("for increment");
-            servo.servoOut(caracteres[i],increment);
-        }
-        delay(1000);
-        for(int decrement = NB_FINGERS-1; decrement >= 0; decrement--){
-            Serial.println("for decrement");
-            servo.reverseMove(caracteres[i],decrement);
-        }
-      }
+  if (ROB.Get_state() == 1){// waiting for input
+    if(Serial.available()>0){// waiting for the serial port to receive an input 
+        msg = ROB.ReadMessage();//Reading the string sent
+        ROB.Get_status();// Sending the status
+        ROB.SendMessage(msg);//Sending the message received
+    }
   }
+  if (ROB.Get_state() == 2){
+    delay(500);
+    char caracteres[sizeof(msg)+1];
+    strcpy(caracteres, msg.c_str());
+    for (int i = 0; i < (msg.length()); i++){
+      delay(2000);
+      Serial.print("Interface:start:"); //Message to interface : start letter
+      Serial.println(caracteres[i]);
+      for(int increment = 0; increment<NB_FINGERS; increment++){
+        servo.servoOut(caracteres[i],increment);
+      }
+      delay(2000);
+        for(int decrement = NB_FINGERS-1; decrement >= 0; decrement--){
+          servo.reverseMove(caracteres[i],decrement);
+        }
+      Serial.println("Interface:done:");//Message to interface : finish letter
+      Serial.println(caracteres[i]);
+    }
+   ROB.Set_state(3);
+    
+  }
+  if (ROB.Get_state() == 3){  
+    delay(500);
+    Serial.println("Interface:exit");
+    ROB.SendMessage("IM DONE");
+    msg = "";
+    ROB.Set_state(1);
+    
+  }    
+  
 }

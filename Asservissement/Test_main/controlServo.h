@@ -55,8 +55,8 @@
 #define KNUCKLE_100				100							///< Angle for an 100 degrees inclined knuckle.
 #define KNUCKLE_110				110                         ///< Angle for an 110 degrees inclined knuckle.
 #define NOT_CROSS				0							///< Angle for a index not cross.
-#define FULLY_CROSS				90							///< Angle for a index fully cross.
-#define HALF_CROSS				45							///< Angle for a index half cross.
+#define FULLY_CROSS				110							///< Angle for a index fully cross.
+#define HALF_CROSS				70							///< Angle for a index half cross.
 
 /**Defining base moving angles.
 */
@@ -74,6 +74,8 @@
 float b_front;
 float b_rigth;
 float b_left;
+float b_half_right;
+float b_half_left;
 
 
   /**The next section contains defined PWM constants.
@@ -94,7 +96,7 @@ struct character {
 	int id;                                                   ///< The character in question converted in Ascii.
 	int pattern[NB_FINGERS];                                  ///< The pattern in which order should the fingers move.
 	int angle[NB_FINGERS];                                    ///< The angles the fingers should move to in accordance to the pattern.
-	int rotation;										  ///< Angle for the rotation of the base and wrist.
+	int rotation;											  ///< Angle for the rotation of the base and wrist.
 } charact[NB_LETTERS];                                        ///< Creating a structure instance charact wich is an array the size of 
 
 class Servo
@@ -138,7 +140,7 @@ public:
 		charact[28] = { ('w'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED},FRONT };
 		charact[29] = { ('x'),{LITTLE,RING,MIDDLE,INDEX,THUMB},{FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,SEC_90,FULLY_INCLINED},FRONT };
 		charact[30] = { ('y'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,VERTICAL},FRONT };
-		charact[31] = { ('z'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},MOVE_Z };
+		charact[31] = { ('z'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},MOVE_Z };
 		charact[32] = { ('6'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,VERTICAL,FULLY_INCLINED},FRONT };
 		charact[33] = { ('7'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,VERTICAL,FULLY_INCLINED,VERTICAL},FRONT };
 		charact[34] = { ('8'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,CONFIG_MRLC,VERTICAL,VERTICAL},FRONT };
@@ -149,9 +151,13 @@ public:
 		b_front = 0 + position;
 		b_rigth = 3100 + position;
 		b_left = -3100 + position;
+		b_half_left = -1550 + position;
+		b_half_right = 1000 + position;
 		#define BASE_FRONT				b_front						///< Angle for base facing front.
 		#define BASE_RIGHT				b_rigth						///< Angle for base turning rigth.
 		#define BASE_LEFT				b_left						///< Angle for base turning left.
+		#define BASE_HALF_LEFT			b_half_left					///< Angle for base turning half left.
+		#define BASE_HALF_RIGHT			b_half_right				///< Angle for base turning half right.
 		return true;
 	}
 
@@ -161,7 +167,20 @@ public:
 		int moveOption = charact[character].angle[increment];
 		int wristBase = charact[character].rotation;
 		moveFinger(finger, moveOption);
-		moveBaseWrist(wristBase);
+		if (wristBase == MOVE_J) {
+			if(increment == NB_FINGERS-1){
+				moveBaseWrist(wristBase);
+			}
+		}
+		else if (wristBase == MOVE_Z) {
+			if (increment == NB_FINGERS - 1) {
+				moveBaseWrist(wristBase);
+			}
+		}
+		else {
+			moveBaseWrist(wristBase);
+		}
+		
 		if (increment < NB_FINGERS - 1) { return false; }
 		else { return true; }
 	}
@@ -193,6 +212,9 @@ public:
 		int nbMotor = 2;
 		int rotation[nbMotor];
 		bool readyToMove = false;
+		bool readypart2 = false;
+		bool readypart3 = false;
+		bool readypart4 = false;
 		for (int i = 0; i < nbMotor; i++) {
 			rotation[i] = 0;
 		}
@@ -223,11 +245,75 @@ public:
 		}
 		if (wristBase == 5) {
 			//MOUVEMENT POR LA LETTRE J
+			delay(500);
+			rotation[0] = BASE_HALF_LEFT;
+			rotation[1] = WRIST_DOWN;
 			readyToMove = true;
+			if (readyToMove) {
+				dxl_wb.goalPosition(12, rotation[0]);
+				dxl_wb.goalPosition(11, rotation[1]);
+				delay(500); //TEST	
+				readyToMove = false; //A METTRE ICI??
+				readypart2 = true;
+			}
+			if (readypart2) {
+				rotation[0] = BASE_LEFT;
+				rotation[1] = WRIST_UP;
+				readyToMove = true;
+				if (readyToMove) {
+					dxl_wb.goalPosition(12, rotation[0]);
+					dxl_wb.goalPosition(11, rotation[1]);
+					readyToMove = false; //Ne fait pas le dernier if (commande deja les moteurs)
+				}
+			}
 		}
 		if (wristBase == 6) {
 			//MOUVEMENT POR LA LETTRE Z
+			delay(500);
+			rotation[0] = BASE_HALF_LEFT;
+			rotation[1] = WRIST_HALF;
 			readyToMove = true;
+			if (readyToMove) {
+				dxl_wb.goalPosition(12, rotation[0]);
+				dxl_wb.goalPosition(11, rotation[1]);
+				delay(1000); //TEST	
+				readyToMove = false; //A METTRE ICI??
+				readypart2 = true;
+			}
+			if (readypart2) {
+				rotation[0] = BASE_HALF_RIGHT;
+				rotation[1] = WRIST_HALF;
+				readyToMove = true;
+				if (readyToMove) {
+					dxl_wb.goalPosition(12, rotation[0]);
+					dxl_wb.goalPosition(11, rotation[1]);
+					delay(650); //TEST	
+					readyToMove = false; //A METTRE ICI??
+					readypart3 = true;
+				}
+			}
+			if (readypart3) {
+				rotation[0] = BASE_HALF_LEFT;
+				rotation[1] = WRIST_DOWN;
+				readyToMove = true;
+				if (readyToMove) {
+					dxl_wb.goalPosition(12, rotation[0]);
+					dxl_wb.goalPosition(11, rotation[1]);
+					delay(650); //TEST	
+					readyToMove = false; //A METTRE ICI??
+					readypart4 = true;
+				}
+			}
+			if (readypart4) {
+				rotation[0] = BASE_HALF_RIGHT;
+				rotation[1] = WRIST_DOWN;
+				readyToMove = true;
+				if (readyToMove) {
+					dxl_wb.goalPosition(12, rotation[0]);
+					dxl_wb.goalPosition(11, rotation[1]);
+					readyToMove = false; //Ne fait pas le dernier if (commande deja les moteurs)
+				}
+			}
 		}
 		if (readyToMove) {
 				dxl_wb.goalPosition(12, rotation[0]);
