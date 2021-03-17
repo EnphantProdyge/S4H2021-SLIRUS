@@ -35,10 +35,15 @@ Thumb: 8 – 9 – 10 – 11 – 27 - 28
 18. Install the thumb on the palm with the bolt of index 25 and the nut of index 26.
 19. Install the lever arms of the fingers on the servomotors of the palm with the bolt of index 15 and the nut of index 16.
 20. Install the motors drive on the back of the hand with the four bolts of index 23.
-21. Make all the electric connections as explained in the electric README.
-22. With three bolts of index 15, install a «+» shape servomotor arm on the base of the palm.
-23. With the bolts of index 20, install the Arduino and the raspberry pi on the base of the arm.
-24. Install the arm on the base with four bolts of index 20.
-25. Install the last servo at the top of the arm with fasteners of index 24.
-26. Pass all the wires of the hand inside the arm and make the connections as explained in the electric README.
-27. Install the hand on the servomotor.
+21. Make all the electric connections relating to the hand motors as explained in the electric README.
+22. Insert a rod of index BLANK into the forearm until the exposed part of the rod is roughly the same length as the thickness of the base.
+23. With the bolts of index 20, install the Open CR and the raspberry pi on the forearm.
+24. Insert one of the Dynamixel in the cage located on the forearm until the rotating circle is level with the exterior of the cage.
+25. Fasten the 3D printed piece of index BLANK to the Dynamixel installed in step 24 using 2 bolts of index BLANK.
+26. Insert the other Dynamixel in the rectangular enclosure in the base, and fasten the gear of index BLANK to said Dynamixel using 2 bolts of index BLANK.
+27. Insert 2 bearings of index BLANK in the circular grooves in the base.
+28. Place the protruding rod of the forearm into the hols in the base, making sure that the gear installed in step 26 and the gear of the forearm mesh together.
+29. Connect the hand to the forearm using a rod of index BLANK, making sure that the driver side of the palm faces the Dynamixel in the forearm.
+30. Install the wrist lever arm (index BLANK) between the forearm dynamixel and the protruding hole at the bottom of the palm.
+31. Connect the Dynamixels as explained in the electric README.
+If desired, you can screw a wooden platform to the base for added stability.
