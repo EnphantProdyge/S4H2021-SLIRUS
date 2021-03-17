@@ -1,10 +1,10 @@
-# Project-SLEARH
-Articulated robotic hand designed for sign language education
+# Project-SLIRUS
+Articulated robotic hand designed for sign language interpretation
 
 # Preriquisites:
 Hardware:
-  - Arduino Mega 2560;
-  - 1 usb to printer type cable;
+  - Open CR;
+  - 1 usb to micro usb;
   - 1 drive for the motors ( (PCA-96 85) link: https://www.sunfounder.com/pca9685-16-channel-12-bit-pwm-servo-driver.html);
   - 12 electrical step motors ((TowerPro SG90 Mini-engrenage Micro Servo 9g) link: https://lamassue.fr/product/towerpro-sg90-mini-engrenage-micro-servo-9g/);
   - RaspberryPi 3B+;
