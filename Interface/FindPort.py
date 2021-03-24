@@ -28,7 +28,7 @@ def serial_ports():
             if "Arduino" in port[1] or "USB" in port[1]:
                 result.append(port[0])
         elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
-            print(port[1])
+            #print(port[1])
             if "ACM0" in port[1] or "AMA0" in port[1]:
                 result.append(port[0])
         else:
@@ -54,8 +54,8 @@ def SendStrToOpenCR(port,msg):
 if __name__ == '__main__':
     list = serial_ports()
     Str_port = list[0]
-    print(Str_port)
+    #print(Str_port)
     #string = input("Quel est le string?:\t")
-    string = "j"
+    string = "jz"
 
     SendStrToOpenCR(Str_port,string)

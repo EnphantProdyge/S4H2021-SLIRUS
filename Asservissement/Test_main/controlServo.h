@@ -31,7 +31,7 @@
 #define CONFIG_MRLB			  5                             ///< Finger middle ring or little with 100 degree angle on both knuckle.
 #define CONFIG_MRLC			  6                             ///< Finger middle ring or little with 110 degree angle on both knuckle.
 #define VERTICAL_CROSS		  7								///< Index fully unfold and cross.
-#define VERTICAL_HCROSS		  7								///< Index fully unfold and cross.
+#define VERTICAL_HCROSS		  8								///< Index half unfold and cross.
 
 
 /** @brief The next defined are the different fingers implemented.

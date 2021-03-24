@@ -79,7 +79,7 @@ void loop() {
         for(int decrement = NB_FINGERS-1; decrement >= 0; decrement--){
           servo.reverseMove(caracteres[i],decrement);
         }
-      Serial.println("Interface:done:");//Message to interface : finish letter
+      Serial.print("Interface:done:");//Message to interface : finish letter
       Serial.println(caracteres[i]);
     }
    ROB.Set_state(3);
