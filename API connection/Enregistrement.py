@@ -98,6 +98,9 @@ def Speech_to_text(dur):
         elif caracter == "û":
             liste.append("u")
             string = string.replace(caracter, "u")
+        elif caracter == "ç":
+            liste.append("c")
+            string = string.replace(caracter, "c")
         elif caracter == " ":
             continue
         else:
