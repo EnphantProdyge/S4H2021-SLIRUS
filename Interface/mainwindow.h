@@ -20,15 +20,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     int GetRecordingTime();
-    void Set_label_visible(QLabel *label);
-    void Set_label_invisible(QLabel *label);
     void Message_toTranscript();
-    bool startsWith(const char *pre, const char *str);
     void MessageBoxError(QString message);
     const char* QStringtoChar(QString qs);
-    void Display_image(QString lettre);
+    void Display_image(QString lettre, bool choice);
     void Record_sequence();
+    bool startsWith(const char *pre, const char *str);
     void Display_Recording_Labels();
+
 
 
 private slots:
@@ -42,13 +41,19 @@ private slots:
 //public slots:
   //      void Display_image(QString lettre);
 
-private:
+    void on_transcript_charac_returnPressed();
+
+protected:
     Ui::MainWindow *ui;
-    int time_;
     int Recording_increment;
+
+private:
+    int time_;
+    int Letter_increment;
     QString OutputSpeech;
     QString OutputError;
     QString OutputOpenCR;
+    QString trad_string;
     QStringList OutputSpeechList;
     QGraphicsScene *scene;
     QPixmap image;

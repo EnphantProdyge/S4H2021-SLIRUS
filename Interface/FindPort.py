@@ -38,7 +38,8 @@ def serial_ports():
 
 def SendStrToOpenCR(port,msg):
     
-    ser = serial.Serial(port, 57600, timeout=1)
+    ser = serial.Serial("/dev/ttyACM0", 57600, timeout=1)
+    #ser = serial.Serial(port, 57600, timeout=1)
     ser.flush()
     line = ""
 
@@ -46,6 +47,7 @@ def SendStrToOpenCR(port,msg):
     while line != "IM DONE" :
         #print(ser)
         line = ser.readline().decode('utf-8').rstrip()
+        #print("patate")
         print(line)
         time.sleep(1)
 
@@ -55,7 +57,7 @@ if __name__ == '__main__':
     list = serial_ports()
     Str_port = list[0]
     #print(Str_port)
-    #string = input("Quel est le string?:\t")
-    string = "jz"
+    string = input("Quel est le string?:\t")
+    
 
     SendStrToOpenCR(Str_port,string)
