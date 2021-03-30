@@ -13,9 +13,12 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <QThread>
 
 std::thread com_;
-std::mutex mutex;
+//QThread timer_;
+std::mutex mutex_disp;
+std::mutex mutex_letter;
 std::condition_variable cv_;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,8 +31,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     Recording_increment = 1;
     Letter_increment = 1;
-    connect(ui->Start_record_button, SIGNAL(pressed()), this, SLOT(Start_Thread()));
-    //When button Start_record_button is pressed in interface, Start_thread is executed
+
+    timer_ = new QTimer(this);
+    connect(timer_, &QTimer::timeout, this, &MainWindow::Timer); //Timer to show images at the same time as the real hand
 }
 
 MainWindow::~MainWindow()
@@ -40,7 +44,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::SendStrToOpenCR() //Function sends string to openCR and plots the right character in interface
 {
-    //qDebug() << "Message envoye: " << trad_string << endl;
     if (trad_string != NULL)
     {
         QString path = "/home/pi/env/SLIRUS_interface/FindPort.py";
@@ -48,30 +51,9 @@ void MainWindow::SendStrToOpenCR() //Function sends string to openCR and plots t
         connect(process, &QProcess::readyReadStandardOutput, [process, this]()
         {
             QString output = process->readAllStandardOutput();
-            const char* chartemp= MainWindow::QStringtoChar(output);
-            QString qstemp = output;
-            if (startsWith("Interface:next", chartemp) == true)
-            {
-                qstemp.remove(0,Letter_increment);
-                qstemp.remove(1,qstemp.length());
-                //MainWindow::Display_image(qstemp,true);
-                Letter_increment = Letter_increment + 1;
-            }
+            OutputOpenCR = output;
+            qDebug() << "output: " << output;
 
-
-            else if (startsWith("Interface:stop", chartemp) == true)
-            {
-                Letter_increment = 1;
-                //MainWindow::Display_image(" ",false);
-            }
-
-            else
-            {
-                OutputOpenCR = output;
-                qDebug() << "output: " << output;
-                output.remove(1,output.length());
-                //MainWindow::Display_image(output,true);
-            }
         });
 
         connect(process, &QProcess::readyReadStandardError, [process, this]()
@@ -83,15 +65,13 @@ void MainWindow::SendStrToOpenCR() //Function sends string to openCR and plots t
 
         connect(process, &QProcess::started, [process, this]()->void
         {
-                process->write((trad_string + QString("\n")).toLatin1());
+            process->write((trad_string + QString("\n")).toLatin1());
         });
         process->start("/usr/bin/python3", QStringList() << path);
 
         process->waitForFinished();
         process->close();
-        ui->Start_record_button->setEnabled(true);
-        ui->See_charac->setEnabled(true);
-        ui->Recording_time->setEnabled(true);
+        SetEnabled_ui(true);
     }
     else
     {
@@ -114,9 +94,7 @@ void MainWindow::Record_sequence() //Function that records the speech-to-text
         connect(process, &QProcess::readyReadStandardOutput, [process, this]()
         {
             QString output = process->readAllStandardOutput();
-            mutex.lock();
             OutputSpeech = output;
-            mutex.unlock();
             qDebug() << "output: " << output;
             if (Recording_increment != -1)
             {
@@ -143,11 +121,7 @@ void MainWindow::Record_sequence() //Function that records the speech-to-text
 
         process->waitForFinished();
         process->close();
-        ui->Start_traduction->setEnabled(true);
-        ui->See_charac->setEnabled(true);
-        ui->Recording_time->setEnabled(true);
-        ui->transcript_charac->setEnabled(true);
-        ui->Start_record_button->setEnabled(true);
+        SetEnabled_ui(true);
         Message_toTranscript();
     }
 
@@ -177,8 +151,7 @@ int MainWindow::GetRecordingTime() //Gets time from the text line edit in the in
 
 void MainWindow::Message_toTranscript() //Separates the receiving string to keep only the real message
 {
-    Label label;
-    label.Display_Recording_Labels();
+    Display_Recording_Labels();
     if (OutputError != NULL)
     {
         com_.join();
@@ -203,9 +176,18 @@ void MainWindow::Message_toTranscript() //Separates the receiving string to keep
 
 void MainWindow::Display_image(QString lettre, bool choice)
 {
+    if (lettre == "")
+    {
+        if(timer_->isActive())
+        {
+            timer_->stop();
+            Letter_increment = 0; //Timer() will upgrade this value by one after that
+        }
+        return;
+    }
     qDebug() << "lettre a display: " << lettre << endl;
     //Displays the image related to the character in the QGraphicView
-    mutex.lock();
+    mutex_disp.lock();
     if (choice)
     {
         QString qstr_temp = "/home/pi/env/SLIRUS_interface/Images/";
@@ -220,7 +202,7 @@ void MainWindow::Display_image(QString lettre, bool choice)
     }
     else
         scene->clear();
-    mutex.unlock();
+    mutex_disp.unlock();
 }
 
 void MainWindow::MessageBoxError(QString message)
@@ -234,15 +216,14 @@ void MainWindow::on_Start_traduction_pressed() //Button to start traduction
 {
     if (com_.joinable())
         com_.join();
-    ui->Start_traduction->setEnabled(false);
-    ui->See_charac->setEnabled(false);
-    ui->Recording_time->setEnabled(false);
-    ui->transcript_charac->setEnabled(false);
-    ui->transcript_charac->setEnabled(false);
-    //ui->Start_record_button->setEnabled(false);
-
+    SetEnabled_ui(false);
+    mutex_letter.lock();
     trad_string = OutputSpeech;
+    mutex_letter.unlock();
+    timer_->start();
+
     com_ = std::thread(&MainWindow::SendStrToOpenCR,this);
+    timer_->start(1000);
 }
 
 void MainWindow::on_See_charac_returnPressed() //when somebody press "enter" to see a specific character on screen
@@ -263,32 +244,14 @@ const char* MainWindow::QStringtoChar(QString qs)
     return temp_char;
 }
 
-void MainWindow::Start_Thread() //this function is called when the user is ready to use the speech-to-text
-{
-    ui->Start_traduction->setEnabled(false);
-    ui->See_charac->setEnabled(false);
-    ui->Recording_time->setEnabled(false);
-    ui->transcript_charac->setEnabled(false);
-    ui->transcript_charac->setEnabled(false);
-    ui->Start_record_button->setEnabled(false);
-    OutputSpeech = "";
-    if (com_.joinable())
-        com_.join();
-
-    com_ = std::thread(&MainWindow::Record_sequence,this);
-}
-
-
 void MainWindow::on_transcript_charac_returnPressed() //when escape is pressed to transcript only certain characters
 {
-    ui->Start_record_button->setEnabled(false);
-    ui->See_charac->setEnabled(false);
-    ui->Recording_time->setEnabled(false);
+    SetEnabled_ui(false);
     if (com_.joinable())
         com_.join();
-
     trad_string = ui->transcript_charac->text();
     com_ = std::thread(&MainWindow::SendStrToOpenCR,this);
+    timer_->start(1000);
 }
 
 bool MainWindow::startsWith(const char *pre, const char *str)
@@ -305,4 +268,48 @@ void MainWindow::Display_Recording_Labels() //displays a label when the system i
 
      else if (MainWindow::Recording_increment == 0)
          ui->Recording_state->setText("Stopped recording");
+
+    else if (MainWindow::Recording_increment == -1)
+        ui->Recording_state->setText(" ");
+}
+
+void MainWindow::on_Start_record_button_clicked() //this function is called when the user is ready to use the speech-to-text
+{
+    SetEnabled_ui(false);
+    OutputSpeech = "";
+    if (com_.joinable())
+        com_.join();
+
+    com_ = std::thread(&MainWindow::Record_sequence,this);
+}
+
+void MainWindow::SetEnabled_ui(bool state)
+{
+    ui->Start_traduction->setEnabled(state);
+    ui->See_charac->setEnabled(state);
+    ui->Recording_time->setEnabled(state);
+    ui->transcript_charac->setEnabled(state);
+    ui->transcript_charac->setEnabled(state);
+    ui->Start_record_button->setEnabled(state);
+}
+
+
+void MainWindow::Timer() //Called by the timer... checks which letter needs to be displayed
+{
+    mutex_letter.lock();
+    QString qstemp = trad_string;
+    mutex_letter.unlock();
+    if (Letter_increment == 1)
+    {
+        qstemp.remove(1,qstemp.length());
+        MainWindow::Display_image(qstemp,true);
+        Letter_increment = Letter_increment + 1;
+    }
+    else
+    {
+        qstemp.remove(0,Letter_increment-1);
+        qstemp.remove(1,qstemp.length());
+        MainWindow::Display_image(qstemp,true);
+        Letter_increment = Letter_increment + 1;
+    }
 }

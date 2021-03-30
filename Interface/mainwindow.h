@@ -7,6 +7,7 @@
 #include <QString>
 #include <QStringList>
 #include <QGraphicsScene>
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -27,27 +28,32 @@ public:
     void Record_sequence();
     bool startsWith(const char *pre, const char *str);
     void Display_Recording_Labels();
+    void SetEnabled_ui(bool state);
+    void SendStrToOpenCR();
+
 
 
 
 private slots:
 
-    void SendStrToOpenCR();
     void on_Start_traduction_pressed();
     void on_See_charac_returnPressed();
-    void Start_Thread();
-
-
-//public slots:
-  //      void Display_image(QString lettre);
-
     void on_transcript_charac_returnPressed();
+    void on_Start_record_button_clicked();
+    void Timer();
 
-protected:
-    Ui::MainWindow *ui;
-    int Recording_increment;
+
+public slots:
+
+
+
+
+
+
 
 private:
+    Ui::MainWindow *ui;
+    int Recording_increment;
     int time_;
     int Letter_increment;
     QString OutputSpeech;
@@ -57,6 +63,8 @@ private:
     QStringList OutputSpeechList;
     QGraphicsScene *scene;
     QPixmap image;
+    QTimer *timer_;
+    QString Disp_letter;
 };
 
 #endif // MAINWINDOW_H
