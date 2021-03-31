@@ -10,7 +10,9 @@ Hardware:
   - RaspberryPi 3B+;
   - Micro-SD card (for RPi image);
   - 2 Dynamixel XL-430;
-  - Piece of plywood 30cm by 30cm (optional, but recommended)
+  - A voltage source with a current limit of more than 2 A;
+  - 12 V power source, to 5.1mm center positive barrel jack;
+  - Piece of plywood 30cm by 30cm (optional, but recommended);
   
 Software;
   - Python 3.7(installed for this gitProject, but not necessarily needed);
