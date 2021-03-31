@@ -8,13 +8,13 @@
 
 # Electrical Connections:
 
-  # OpenCR pins      Drive Pins
+  # OpenCR pins to Drive Pins
     - 5V   ------->    VCC
     - Ground  ---->    Ground
     - scl(pin15) ->    scl
     - sda(pin14) ->    sda
     
-  # Drive pins       Servo Moteurs    
+  # Drive pins to Servo Motors    
     - 0      --------> motor 0 (thumb bottom)
     - 1      --------> motor 1 (thumb top)
     - 2      --------> motor 2 (index bottom)
