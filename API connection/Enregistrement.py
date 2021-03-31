@@ -19,21 +19,21 @@ def Speech_to_text(dur):
     print("Recording stopped")
     # print(myrecording)
 
-    sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in a audio flac file
-
-    storage_client = storage.Client.from_service_account_json("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json") #Connection to google cloud for storage purposes #Be sure to put the directory of your google project key
+    sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in a audio flac file 
+    
+#Connection to google cloud for storage purposes
+    storage_client = storage.Client.from_service_account_json("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json")  #Be sure to put the directory of your own google project key
 
     # Upload the flac audio file in google cloud storage
-    bucket = storage_client.bucket("enregistrement_audio")  # Go in the enregistrement_audio bucket
+    bucket = storage_client.bucket("enregistrement_audio")  # Be sure to put as the input the name of your own bucket that you created in your project
     blob = bucket.blob("Test_upload")  # Name of the audio file in google cloud storage
     blob.upload_from_filename('enregistrement.flac')  # Upload audio file from computer
 
 # Instantiates a client for transcription
-    client = speech.SpeechClient.from_service_account_file("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json")
+    client = speech.SpeechClient.from_service_account_file("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json") #Be sure to put the directory of your own google project key
 
 #The name of the audio file to transcribe
-    #file_name = "C:/Users/Raphael/Documents/Udes/S4/Projet/python programs/Enregistrement.flac"
-    gcs_uri = "gs://enregistrement_audio/Test_upload" # Audio file google_cloud_storage link
+    gcs_uri = "gs://enregistrement_audio/Test_upload" # Audio file google_cloud_storage directory
 
 #Transcription of the audio file in google cloud storage
     audio = types.RecognitionAudio(uri=gcs_uri)  # Contains the audio file
@@ -47,16 +47,11 @@ def Speech_to_text(dur):
 
 # Add each letter in a string
     for result in response.results:
-        #print(format(result.alternatives[0].transcript))
         string = format(result.alternatives[0].transcript)
-        #list[i] = format(result.alternatives[0].transcript)
-
-    #print(string)
+        
+# Add each caracter in a list and removing unwanted punctuations and caracters      
     i = 0
     liste = []
-    #print("Version 0 " + string)
-
-# Add each caracter in a list and removing of punctuations
     for caracter in string:
         for ponc in PONC:
             if ponc == caracter:
@@ -94,12 +89,8 @@ def Speech_to_text(dur):
             continue
         else:
             liste.append(caracter)
-
-        #print(caracter, "placer dans la liste a la position", i)
         i = i+1
     return liste, string
-
-
 
 if __name__ == '__main__':
     dur = int(input("Enter the duration of recording: "))
