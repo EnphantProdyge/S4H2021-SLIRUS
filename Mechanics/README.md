@@ -2,7 +2,7 @@ ASSEMBLY OF THE HAND
 
 1. Start by opening the BOM file in this folder.
 2. With a 3D printer at 40% fill and supports, print all the parts that have &quot;3D printed&quot; as a link. Some parts need to be printed more than once, refer to the quantity column of the BOM to know how many.
-3. Make sure you have at your disposition all the fasteners needed for the assembly. The specs and the quantity needed are given in the BOM. If you need to buy anything, there is a McMaster link for each part.
+3. Cut all the pivot rod with lenghts and quantity as described in the BOM (index 15-16)
 4. Separate all the printed parts for each of the fingers where each number is the index in the BOM;
 
 Pinky: 4 – 1 – 12 – 7
