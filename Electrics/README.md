@@ -28,6 +28,6 @@
     - 10     --------> motor 10 (index base) 
     - 13     --------> motor 11 (thumb base) 
 
-2A voltage source must be connected to the 2 pin terminal block of the drive.
-The voltage source with the barrel jack must be connected to the female adapter on the OpenCR.
-The 2 Dynamixel servos can be plugged into any of the TTL ports on the OpenCR.
+-The 2A voltage source must be connected to the 2 pin terminal block of the drive.
+-The voltage source with the barrel jack must be connected to the female adapter on the OpenCR.
+-The 2 Dynamixel servos can be plugged into any of the TTL ports on the OpenCR.
