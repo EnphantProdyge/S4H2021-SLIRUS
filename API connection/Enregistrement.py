@@ -11,33 +11,22 @@ PONC = ["!", '"', "'", ")", "(", ",", ".", ";", ":", "?", "-", "_", "\r", "]", "
 
 def Speech_to_text(dur):
 
-    fs = 48000  # frame per second
-    duration = dur  # seconds
-    myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  # Put recording in numpy array
+    fs = 48000  # Sample rate
+    duration = dur  # time in seconds
+    myrecording = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float32')  #Recording and putting the information in a numpy array
     print("Recording Audio")
     sd.wait()
     print("Recording stopped")
     # print(myrecording)
 
-    sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in flac file
+    sf.write('enregistrement.flac', myrecording, fs)  #Write the recording in a audio flac file
 
-    storage_client = storage.Client.from_service_account_json("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json") #Connection to google cloud for storage purposes
-
-    #buckets = list(storage_client.list_buckets())
-    #print(buckets[0])
+    storage_client = storage.Client.from_service_account_json("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json") #Connection to google cloud for storage purposes #Be sure to put the directory of your google project key
 
     # Upload the flac audio file in google cloud storage
     bucket = storage_client.bucket("enregistrement_audio")  # Go in the enregistrement_audio bucket
     blob = bucket.blob("Test_upload")  # Name of the audio file in google cloud storage
     blob.upload_from_filename('enregistrement.flac')  # Upload audio file from computer
-
-
-### code pour faire jouer lenregistrement
-    """   
-    print("Audio recording complete , Play Audio")
-    sd.play(myrecording, fs)
-    sd.wait()
-    print("Play Audio Complete")"""
 
 # Instantiates a client for transcription
     client = speech.SpeechClient.from_service_account_file("/home/pi/env/SLIRUS_interface/SLIRUS_keyID.json")
