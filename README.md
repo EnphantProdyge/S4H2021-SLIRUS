@@ -6,9 +6,11 @@ Hardware:
   - Open CR;
   - 1 usb to micro usb;
   - 1 drive for the motors ( (PCA-96 85) link: https://www.sunfounder.com/pca9685-16-channel-12-bit-pwm-servo-driver.html);
-  - 12 electrical step motors ((TowerPro SG90 Mini-engrenage Micro Servo 9g) link: https://lamassue.fr/product/towerpro-sg90-mini-engrenage-micro-servo-9g/);
+  - 12 electrical step motors ((Smraza 9G Micro Servo Motor) link: https://www.amazon.ca/gp/product/B0886351PP/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1);
   - RaspberryPi 3B+;
   - Micro-SD card (for RPi image);
+  - 2 Dynamixel XL-430;
+  - Piece of plywood 30cm by 30cm (optional, but recommended)
   
 Software;
   - Python 3.7(installed for this gitProject, but not necessarily needed);
