@@ -2,18 +2,26 @@ ASSEMBLY OF THE HAND
 
 1. Start by opening the BOM file in this folder.
 2. With a 3D printer at 40% fill and supports, print all the parts that have &quot;3D printed&quot; as a link. Some parts need to be printed more than once, refer to the quantity column of the BOM to know how many.
-3. Cut all the pivot rod with lenghts and quantity as described in the BOM (index 15-16)
+3. Cut all the pivot rods with lenghts and quantity as described in the BOM (index 15-16)
 4. Separate all the printed parts for each of the fingers where each number is the index in the BOM;
 
-Pinky: 4 – 1 – 12 – 7
+Pinky: 2 – 6 – 4 – 5
 
-Ring finger: 4 – 1 – 12 – 3
+Ring finger: 2 – 6 – 4 – 5
 
-Middle finger: 4 – 1 – 12 – 5
+Middle finger: 1 – 6 – 4 – 5
 
-Index finger: 4 – 1 – 12 – 3
+Index finger: 1 – 6 – 4 – 5 - 13 - 10 - 18
 
-Thumb: 8 – 9 – 10 – 11 – 27 - 28
+Thumb: 3 – 6 – 8 – 10 – 9 - 12
+
+The assembly of the fingers is done with rods that are used as pivots in the joints. The servos' moving lever are fixed on the 3D printed levers with nails. The nail's head holds the lever in place and the other end is press fitted into the 3d printed lever.
+
+Assembly of the pinky finger:
+1. Attach part 2 and 6 with a 14mm pin. The assembly should be able to move freely.
+2. Attach part 2 and 4 together with a 14mm pin.
+3. Screw a Servo on part 6.
+4. 
 
 1. For the pinky, attach the two phalanxes together at the joint with the bolt of index 17 and the nut of index 19.
 2. Assemble a servomotor to the servosocket with the fasteners 24. Make sure the wires are towards the hand.
