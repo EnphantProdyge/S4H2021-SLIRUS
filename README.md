@@ -38,7 +38,7 @@ Software;
   - Set your Arduino_debug.exe path in your VsCode setups;
   - Build the project one first time (and it should load all the needed libraries);
   (Now, your Arduino side of the project should be up to run)
-
+  - Import OpenCr library as shown in this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ
   - Plug the Arduino to your computer and start the UI_Main_Script.py to start the application and the Arduino thread!
   
  # Steps to be able to run to application on the Raspberry Pi 3b+
