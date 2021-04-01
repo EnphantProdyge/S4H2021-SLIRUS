@@ -21,7 +21,14 @@ Assembly of the pinky finger:
 1. Attach part 2 and 6 with a 14mm pin. The assembly should be able to move freely.
 2. Attach part 2 and 4 together with a 14mm pin.
 3. Screw a Servo on part 6.
-4. 
+4. Attach part 5 and 6 with a 14mm pin.
+5. With a nail, attach part 4 to the servo screwed on part 6.
+6. Screw a servo on part 7.
+7. With a nail, attach part 5 to the servo screwed on part 7.
+
+For the four other fingers follow the same steps as for the pinky finger using the parts specified earlier.
+
+
 
 1. For the pinky, attach the two phalanxes together at the joint with the bolt of index 17 and the nut of index 19.
 2. Assemble a servomotor to the servosocket with the fasteners 24. Make sure the wires are towards the hand.
