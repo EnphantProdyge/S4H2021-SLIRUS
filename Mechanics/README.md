@@ -28,6 +28,8 @@ Assembly of the pinky finger:
 
 For the four other fingers follow the same steps as for the pinky finger using the parts specified earlier.
 
+When the fingers are assembled, the servo holders are cliped on the palm and a rod is inserted in the pivot.
+
 Assembly of the base:
 8. Install the motors drive on the back of the hand with the four bolts of index 29.
 9. Make all the electric connections relating to the hand motors as explained in the electric README.
