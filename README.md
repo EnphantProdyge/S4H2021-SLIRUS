@@ -25,6 +25,7 @@ Software;
     - ArduinoJson.h;
     - Wire.h;
     (But they all should be downloaded with the plateformio.ini)
+  -Qt (5.10 or newer)
     
 # Steps to start your project:
   - Read the Mechanics/README.md for informations on how to build the hand;
