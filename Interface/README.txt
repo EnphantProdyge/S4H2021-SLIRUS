@@ -21,3 +21,6 @@ to start the hand traduction. This way, you don't need to use the speech-to-text
 
 When the traduction is started, the hand will show every character one by one. At the same time, the interface will show the character
 the hand is doing. 
+
+FindPort:
+Communication between interface and OpenCr.
