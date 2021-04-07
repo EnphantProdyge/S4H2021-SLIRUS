@@ -1,14 +1,18 @@
-# Project-SLEARH
-Articulated robotic hand designed for sign language education
+# Project-SLIRUS
+Articulated robotic hand designed for sign language interpretation
 
 # Preriquisites:
 Hardware:
-  - Arduino Mega 2560;
-  - 1 usb to printer type cable;
+  - Open CR;
+  - 1 usb to micro usb;
   - 1 drive for the motors ( (PCA-96 85) link: https://www.sunfounder.com/pca9685-16-channel-12-bit-pwm-servo-driver.html);
-  - 12 electrical step motors ((TowerPro SG90 Mini-engrenage Micro Servo 9g) link: https://lamassue.fr/product/towerpro-sg90-mini-engrenage-micro-servo-9g/);
+  - 12 electrical step motors ((Smraza 9G Micro Servo Motor) link: https://www.amazon.ca/gp/product/B0886351PP/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1);
   - RaspberryPi 3B+;
   - Micro-SD card (for RPi image);
+  - 2 Dynamixel XL-430;
+  - A voltage source with a current limit of more than 2 A;
+  - 12 V power source, to 5.1mm center positive barrel jack;
+  - Piece of plywood 30cm by 30cm (optional, but recommended);
   
 Software;
   - Python 3.7(installed for this gitProject, but not necessarily needed);
@@ -34,7 +38,7 @@ Software;
   - Set your Arduino_debug.exe path in your VsCode setups;
   - Build the project one first time (and it should load all the needed libraries);
   (Now, your Arduino side of the project should be up to run)
-
+  - Import OpenCr library as shown in this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ
   - Plug the Arduino to your computer and start the UI_Main_Script.py to start the application and the Arduino thread!
   
  # Steps to be able to run to application on the Raspberry Pi 3b+
