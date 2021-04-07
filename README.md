@@ -30,6 +30,8 @@ Software;
 # Steps to start your project:
   - Read the Mechanics/README.md for informations on how to build the hand;
   - Read the Electrics/README.md for informations on how to plug the motors and the drive on the arduino;
+  - Read the Interface/README.md for informations on how to use the interface
+  - Read the API connection/README.md for informations on how to install the necessary librairies for the speech-to-text and create a key for the API connection
   - Install your favorite python IDE;
   - Open this git repo in a new project and create a python RunTool for UI_Main_Script.py script (that's where the application starts);
   - Install pySerial on your computer (it will appears in your python <python path>/Lib/*);
