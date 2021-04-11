@@ -1,9 +1,12 @@
 import Enregistrement
+import time
 
 
 
 def Call_Enregistrement():
+    start_time = time.time()
     (liste,string) = Enregistrement.Speech_to_text(5) #Number 5 represents the recording time (5 sec)
+    print(" Le calcul a pris %s seconds" % (time.time() - start_time - 5))
     return string
 
 def configuration(conf_):
@@ -26,7 +29,7 @@ if __name__ == '__main__':
     #To get the tests in english, you need to change the API and the phrases in the configuration function for words in english
     conf_ = int(input('Écrire la configuration/Write configuration: '))
     string = configuration(conf_)
-    print(string)
+    print("vous venez de dire: " + string)
     if conf_ == 1:
         assert string == 'maison'
     elif conf_ == 2:
