@@ -1,5 +1,6 @@
 # Project-SLIRUS
 Articulated robotic hand designed for sign language interpretation
+Continuation from the SLEARH project: https://github.com/UdeS-GRO/S4H2020-SLEARH
 
 # Preriquisites:
 Hardware:
