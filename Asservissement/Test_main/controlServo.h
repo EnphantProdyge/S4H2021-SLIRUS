@@ -9,7 +9,7 @@
   * @author CHARBONNEAU, EMILE
   * @date 19/04/2020
   * Modify by BEAUMIER,FANNY
-  * @date 10/02/2021
+  * @date 13/04/2021
   */
 
 #include <Arduino.h>
@@ -27,16 +27,16 @@
 #define HORIZONTAL            1                             ///< Finger with first knuckle fold.
 #define SEC_90				  2                             ///< Finger with second knuckle fold.
 #define FULLY_INCLINED        3                             ///< Finger with botch knuckles fold.
-#define CONFIG_MRLA			  4                             ///< Finger middle ring or little with 80 degree angle on both knuckle.
-#define CONFIG_MRLB			  5                             ///< Finger middle ring or little with 100 degree angle on both knuckle.
-#define CONFIG_MRLC			  6                             ///< Finger middle ring or little with 110 degree angle on both knuckle.
+#define CONFIG_MRLA			  4                             ///< Finger with 80 degree angle on both knuckle.
+#define CONFIG_MRLB			  5                             ///< Finger with 100 degree angle on both knuckle.
+#define CONFIG_MRLC			  6                             ///< Finger with 110 degree angle on both knuckle.
 #define VERTICAL_CROSS		  7								///< Index fully unfold and cross.
 #define VERTICAL_HCROSS		  8								///< Index half unfold and cross.
 
 
 /** @brief The next defined are the different fingers implemented.
  *
- * The increment per finger is 2 because there are 2 motors per finger that requires to move.
+ * The increment per finger is 2 because there are 2 motors per finger that requires to move. (except for the index and the thumb)
  * This implementation eases the working principal of the function moveFinge(int,int).
  */
 #define THUMB                 0
@@ -58,7 +58,7 @@
 #define FULLY_CROSS				110							///< Angle for a index fully cross.
 #define HALF_CROSS				70							///< Angle for a index half cross.
 
-/**Defining base moving angles.
+/**Defining base and wrist moving angles.
 */
 #define FRONT					0							///< Hand face front.
 #define DOWN_RIGHT				1							///< Hand turn rigth and wrist at 90 degrees.
@@ -68,18 +68,23 @@
 #define MOVE_J					5							///< Hand move for J letter.
 #define MOVE_Z					6							///< Hand move for Z letter.
 
+/**Defining wrist moving angles.
+*/
 #define WRIST_UP				2							///< Angle for a vertical wrist.
 #define WRIST_HALF				500							///< Angle for a 45 degrees wirst.
-#define WRIST_DOWN				1000							///< Angle for a horizontal wrist.
-float b_front;
-float b_rigth;
-float b_left;
-float b_half_right;
-float b_half_left;
+#define WRIST_DOWN				1000						///< Angle for a horizontal wrist.
+
+/**Global variable for the base moving angles.
+*/
+float b_front;												///< Hand face front.
+float b_rigth;												///< Hand turn rigth.
+float b_left;												///< Hand turn left.
+float b_half_right;											///< Hand turn half rigth.
+float b_half_left;											///< Hand turn half left.
 
 
-  /**The next section contains defined PWM constants.
-   */
+/**The next section contains defined PWM constants.
+*/
 #define MIN_PULSE_WIDTH       650
 #define MAX_PULSE_WIDTH       2350
 #define DEFAULT_PULSE_WIDTH   1500
@@ -87,7 +92,7 @@ float b_half_left;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();    ///< Setting up the pwm object with the default address for the driver (0x40).
 uint8_t servonum = 1;                                       ///< Creation of a servo driver object (PCA9685).
-DynamixelWorkbench dxl_wb;
+DynamixelWorkbench dxl_wb;									///< Creation of a dynamixel.
 
 /** @struct character
  * @brief Creating a structure that will hold informations relative to each character.
@@ -107,7 +112,7 @@ public:
 		 *
 		 * This constructor initializes each character coded below in accordance to the structure character.
 		 * This is the structure to follow :
-		 * charact[int] = {{('Character id')},{pattern},{Angles}};
+		 * charact[int] = {{('Character id')},{pattern},{Angles},{rotation}};
 		 */
 		charact[0] = { ('0'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,FULLY_INCLINED,CONFIG_MRLC,CONFIG_MRLC,CONFIG_MRLC},LEFT };
 		charact[1] = { ('1'),{THUMB,INDEX,MIDDLE,RING,LITTLE},{FULLY_INCLINED,VERTICAL,FULLY_INCLINED,FULLY_INCLINED,FULLY_INCLINED},FRONT };
@@ -160,6 +165,13 @@ public:
 		#define BASE_HALF_RIGHT			b_half_right				///< Angle for base turning half right.
 		return true;
 	}
+	/** @fn bool setupBase(float position)
+	 * @brief Function of the servo class. This function will set the different angle to reach for different 
+	          configuration of the base in function of the initial position of the base.
+	 * @param character the character to be displayed.
+	 * @param increment an integer instructing wich pattern and angle index to reach in the character's structure.
+	 * @return true only once every finger moved.
+	 */
 
 	bool servoOut(int character, int increment) {
 		character = adjustCommand(character);
@@ -202,7 +214,7 @@ public:
 		else { return true; }
 	}
 	/** @fn bool reverseMove(int character,int decrement)
-	 * @brief This function will move a finger to the vertical.
+	 * @brief This function will move a finger to the vertical (letter 5).
 	 * @param character the character previously displayed.
 	 * @param decrement an integer instructing wich finger to unfold.
 	 * @return true only once every finger has unfold.
@@ -321,6 +333,12 @@ public:
 		}
 		return 0;
 	}
+	/** @fn int moveBaseWrist(int wristBase)
+	 * @brief This function sends the PWM to the dynamixel of the base and the wrist.
+	 * @param baseWrist a configuration to be reach.
+	 * The different move options are : FRONT, DOWN_RIGHT, HALF_LEFT, LEFT, DOWN, MOVE_J and MOVE_Z
+	 * @return 0 once every dynamixel moved.
+	 */
 
 	int moveFinger(int finger, int moveOption) {
 		int nbMotor = 2;
@@ -391,7 +409,8 @@ public:
 	 * @brief This function sends the PWM to the servos of a finger.
 	 * @param finger a finger to be moved.
 	 * @param moveOption a selected moveOption.
-	 * The different move options are : VERTICAL, HORIZONTAL, FULLY_INCLINED AND A90_DEGREE.
+	 * The different move options are : KNUCKLE1_UP, KNUCKLE1_90, KNUCKLE2_UP, KNUCKLE2_90, KNUCKLE_80, 
+	   KNUCKLE_100, KNUCKLE_110, NOT_CROSS, FULLY_CROSS and HALF_CROSS
 	 * @return 0 once every motor of the finger moved.
 	 */
 
