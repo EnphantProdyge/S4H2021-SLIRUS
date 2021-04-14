@@ -64,15 +64,13 @@ Step by step on how to setup the google cloud project for SLIRUS:
 
 Now you should have the JSON key downloaded. This will allow you to have access to the APIs that were enable for your projet. 
 
-4-Create a bucket in your google cloud project:
+4. Create a bucket in your google cloud project:
 	4.1-Click on "Storage" in the menu. 
 	4.2-Click on "CREATE BUCKET" and fill in the information required.
 Remember the name of your bucket because you'll need to put it in the code ...
 
 
-
-
-4. Run Enregistrement.py in the virtual environment
+5. Run Enregistrement.py in the virtual environment
 
 This section is reserved to those who use a virtual environment. 
 To open the file in the virtual environment (and use the libraries inside), be sure that the virtual environment is still active.
@@ -82,3 +80,9 @@ Write in the command window "python3 Enregistrement.py"
   
 You should now be able to transcribe your voice into text.
 
+6. Run Enregistrement_automatic_tests
+This program lets you test your speech-to-text
+Some words/sentences are already written in french. If you want to test in another language, you juste need to change them for what you want.
+The recording time is set to 5 sec, but you can change it to whatever you want in the line calling the function
+To make it work, speak clearly and a constant pace. 
+Don't try too difficult phrases, because the API sometimes does little ortograph mistakes (For example "it eat")
