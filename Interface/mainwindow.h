@@ -63,7 +63,8 @@ private:
     QStringList OutputSpeechList;
     QGraphicsScene *scene;
     QPixmap image;
-    QTimer *timer_;
+    QThread *dis_im;
+    //QTimer *timer_;
     QString Disp_letter;
 };
 

@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+ #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "label.h"
 
@@ -16,7 +16,6 @@
 #include <QThread>
 
 std::thread com_;
-//QThread timer_;
 std::mutex mutex_disp;
 std::mutex mutex_letter;
 std::condition_variable cv_;
@@ -32,14 +31,16 @@ MainWindow::MainWindow(QWidget *parent) :
     Recording_increment = 1;
     Letter_increment = 1;
 
-    timer_ = new QTimer(this);
-    connect(timer_, &QTimer::timeout, this, &MainWindow::Timer); //Timer to show images at the same time as the real hand
+    //timer_ = new QTimer(this);
+    dis_im = new QThread(this);
+    connect(dis_im, &QThread::started, this, &MainWindow::Timer); //Timer to show images at the same time as the real hand
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete scene; //scene created in Display_image()
+    delete dis_im; //thread created to display images
 }
 
 void MainWindow::SendStrToOpenCR() //Function sends string to openCR and plots the right character in interface
@@ -53,6 +54,24 @@ void MainWindow::SendStrToOpenCR() //Function sends string to openCR and plots t
             QString output = process->readAllStandardOutput();
             OutputOpenCR = output;
             qDebug() << "output: " << output;
+            if(output.contains("Interface:start"))
+            {
+                QString qs = output;
+                qs.remove(0,16);
+                qs.remove(1,qs.length());
+                mutex_letter.lock();
+                trad_string = qs;
+                mutex_letter.unlock();
+                dis_im->start();
+            }
+            if(output.contains("IM DONE"))
+            {
+                mutex_letter.lock();
+                trad_string = "";
+                mutex_letter.unlock();
+                dis_im->start();
+                //Display_image("", false);
+            }
 
         });
 
@@ -177,14 +196,8 @@ void MainWindow::Message_toTranscript() //Separates the receiving string to keep
 void MainWindow::Display_image(QString lettre, bool choice)
 {
     if (lettre == "")
-    {
-        if(timer_->isActive())
-        {
-            timer_->stop();
-            Letter_increment = 0; //Timer() will upgrade this value by one after that
-        }
-        return;
-    }
+        scene->clear();
+        
     qDebug() << "lettre a display: " << lettre << endl;
     //Displays the image related to the character in the QGraphicView
     mutex_disp.lock();
@@ -203,6 +216,8 @@ void MainWindow::Display_image(QString lettre, bool choice)
     else
         scene->clear();
     mutex_disp.unlock();
+    if (dis_im->isRunning())
+            dis_im->quit();
 }
 
 void MainWindow::MessageBoxError(QString message)
@@ -220,10 +235,10 @@ void MainWindow::on_Start_traduction_pressed() //Button to start traduction
     mutex_letter.lock();
     trad_string = OutputSpeech;
     mutex_letter.unlock();
-    timer_->start();
+    //timer_->start();
 
     com_ = std::thread(&MainWindow::SendStrToOpenCR,this);
-    timer_->start(1000);
+    //timer_->start(3000);
 }
 
 void MainWindow::on_See_charac_returnPressed() //when somebody press "enter" to see a specific character on screen
@@ -251,7 +266,7 @@ void MainWindow::on_transcript_charac_returnPressed() //when escape is pressed t
         com_.join();
     trad_string = ui->transcript_charac->text();
     com_ = std::thread(&MainWindow::SendStrToOpenCR,this);
-    timer_->start(1000);
+    //timer_->start(4000);
 }
 
 bool MainWindow::startsWith(const char *pre, const char *str)
@@ -299,17 +314,5 @@ void MainWindow::Timer() //Called by the timer... checks which letter needs to b
     mutex_letter.lock();
     QString qstemp = trad_string;
     mutex_letter.unlock();
-    if (Letter_increment == 1)
-    {
-        qstemp.remove(1,qstemp.length());
-        MainWindow::Display_image(qstemp,true);
-        Letter_increment = Letter_increment + 1;
-    }
-    else
-    {
-        qstemp.remove(0,Letter_increment-1);
-        qstemp.remove(1,qstemp.length());
-        MainWindow::Display_image(qstemp,true);
-        Letter_increment = Letter_increment + 1;
-    }
+    MainWindow::Display_image(qstemp,true);
 }
